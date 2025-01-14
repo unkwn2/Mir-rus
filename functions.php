@@ -154,18 +154,17 @@ function generateUsername($from_id,$Metode,$username,$randomString,$text)
     $setting = select("setting", "*");
     global $connect;
    if ($Metode == "Числовой ID + случайные буквы и числа") {
-    return $from_id . "_" . $randomString; // Возвращаем ID пользователя и случайную строку
+    return $from_id . "_" . $randomString;
 } elseif ($Metode == "Имя пользователя + случайные буквы и числа") {
-    return $username . "_" . $randomString; // Возвращаем имя пользователя и случайную строку
+    return $username . "_" . $randomString;
 } elseif ($Metode == "Имя пользователя + последовательные числа") {
-    $statistics = mysqli_fetch_assoc(mysqli_query($connect, "SELECT COUNT(id_user) FROM invoice WHERE id_user = '$from_id'")); // Получаем количество счетов для пользователя
-    $countInvoice = intval($statistics['COUNT(id_user)']) + 1; // Увеличиваем счет на 1
-    return $username . "_" . $countInvoice; // Возвращаем имя пользователя и номер счета
-} elseif ($Metode == "Произвольное имя пользователя") {
-    return $text; // Возвращаем произвольный текст
-} elseif ($Metode == "Произвольный текст + случайные числа") {
-    return $setting['namecustome'] . "_" . $randomString; // Возвращаем произвольный текст из настроек и случайную строку
-}
+    $statistics = mysqli_fetch_assoc(mysqli_query($connect, "SELECT COUNT(id_user) FROM invoice WHERE id_user = '$from_id'"));
+    $countInvoice = intval($statistics['COUNT(id_user)']) + 1;
+    return $username . "_" . $countInvoice;
+    }
+elseif ($Metode == "Произвольное имя пользователя") return $text;
+elseif ($Metode == "Произвольный текст + случайные числа") return $setting['namecustome'] . "_" . $randomString;
+
 
 function outputlunk($text){
     $ch = curl_init();
