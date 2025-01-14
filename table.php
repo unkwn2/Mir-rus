@@ -26,6 +26,7 @@ try {
         last_message_time varchar(100) NOT NULL,
         affiliatescount varchar(100) NOT NULL,
         affiliates varchar(100) NOT NULL,
+        verify varchar(50) NOT NULL,
         username varchar(1000) NOT NULL)
         ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_bin");
         if (!$result) {
@@ -38,6 +39,12 @@ try {
             $connect->query("ALTER TABLE user ADD affiliatescount VARCHAR(100)");
             $connect->query("UPDATE user SET affiliatescount = '0'");
             echo "The affiliatescount field was added ✅";
+            }
+	        $Check_filde = $connect->query("SHOW COLUMNS FROM user LIKE 'verify'");
+	        if (mysqli_num_rows($Check_filde) != 1) {
+	            $connect->query("ALTER TABLE user ADD verify VARCHAR(50)");
+	            $connect->query("UPDATE user SET verify = '0'");
+            echo "The verify field was added ✅";
         }
         $Check_filde = $connect->query("SHOW COLUMNS FROM user LIKE 'affiliates'");
         if (mysqli_num_rows($Check_filde) != 1) {
@@ -162,21 +169,30 @@ try {
         val_usertest varchar(600)  NULL,
         Extra_volume varchar(600)  NULL,
         namecustome varchar(100)  NULL,
+        status_verify varchar(50)  NULL,
         removedayc varchar(100)  NULL)
         ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_bin");
         if (!$result) {
             echo "table setting".mysqli_error($connect);
         }
-        $active_bot_text = "✅  ربات روشن است";
-        $active_roll_text = "❌ تایید قوانین خاموش است";
-        $active_phone_text = "❌ احرازهویت شماره تماس غیرفعال است";
-        $active_phone_iran_text = "❌ بررسی شماره ایرانی غیرفعال است";
-        $active_help = "❌ آموزش غیرفعال است";
-        $sublink = "✅ لینک اشتراک فعال است.";
-        $configManual = "❌ ارسال کانفیگ دستی خاموش است";
-        $configManual = "❌ ارسال کانفیگ دستی خاموش است";
-        $connect->query("INSERT INTO setting (Bot_Status,roll_Status,get_number,limit_usertest_all,time_usertest,val_usertest,help_Status,iran_number,NotUser,namecustome,removedayc) VALUES ('$active_bot_text','$active_roll_text','$active_phone_text','1','1','100','$active_help','$active_phone_iran_text','offnotuser','0','1')");
+        $active_bot_text = "1"; // Статус бота: активен
+$active_roll_text = "0"; // Статус ролей: неактивен
+$active_phone_text = "0"; // Статус получения номеров: неактивен
+$active_phone_iran_text = "0"; // Статус номеров из Ирана: неактивен
+$active_help = "0"; // Статус помощи: неактивен
+$sublink = "✅ Линк подписки активен."; // Сообщение о статусе подписки
+$configManual = "❌ Отправка конфигурации вручную отключена"; // Сообщение о конфигурации
+$configManual = "❌ Отправка конфигурации вручную отключена"; // Повторное определение переменной
+
+// Вставка настроек в базу данных
+$connect->query("INSERT INTO setting (Bot_Status, roll_Status, get_number, limit_usertest_all, time_usertest, val_usertest, help_Status, iran_number, NotUser, namecustome, removedayc, status_verify) VALUES ('$active_bot_text', '$active_roll_text', '$active_phone_text', '1', '1', '100', '$active_help', '$active_phone_iran_text', '0', '0', '1', '0')");
     } else {
+    $Check_filde = $connect->query("SHOW COLUMNS FROM setting LIKE 'status_verify'");
+        if (mysqli_num_rows($Check_filde) != 1) {
+            $connect->query("ALTER TABLE setting ADD status_verify VARCHAR(50)");
+	            $connect->query("UPDATE setting SET status_verify = '0'");
+	            echo "The status_verify field was added ✅";
+	        }
         $Check_filde = $connect->query("SHOW COLUMNS FROM setting LIKE 'namecustome'");
         if (mysqli_num_rows($Check_filde) != 1) {
             $connect->query("ALTER TABLE setting ADD namecustome VARCHAR(200)");
@@ -241,13 +257,13 @@ try {
         $Check_filde = $connect->query("SHOW COLUMNS FROM setting LIKE 'roll_Status'");
         if (mysqli_num_rows($Check_filde) != 1) {
             $connect->query("ALTER TABLE setting ADD roll_Status VARCHAR(200)");
-            $connect->query("UPDATE setting SET roll_Status = '✅ روشن '");
+            $connect->query("UPDATE setting SET roll_Status = '1'");
             echo "The roll_Status field was added ✅";
         }
         $settingsql = mysqli_fetch_assoc(mysqli_query($connect, "SELECT * FROM setting"));
-        $sublink = "✅ لینک اشتراک فعال است.";
-        $active_phone_iran_text = "❌ بررسی شماره ایرانی غیرفعال است";
-        $configManual = "❌ ارسال کانفیگ دستی خاموش است";
+        $sublink = "✅ Линк подписки активен."; // Сообщение о статусе подписки
+		$active_phone_iran_text = "0"; // Статус номеров из Ирана: неактивен
+		$configManual = "❌ Отправка конфигурации вручную отключена"; // Сообщение о конфигурации
         if(!isset($settingsql['iran_number'])){
             $stmt = $connect->prepare("UPDATE setting SET iran_number = ?");
             $stmt->bind_param("s", $active_phone_iran_text);
@@ -349,12 +365,6 @@ try {
         if (mysqli_num_rows($Check_filde) != 1) {
             $connect->query("ALTER TABLE marzban_panel ADD proxies TEXT");
             echo "The proxies field was added ✅";
-        }
-        $Check_filde = $connect->query("SHOW COLUMNS FROM marzban_panel LIKE 'shadowsocks'");
-        if (mysqli_num_rows($Check_filde) != 1) {
-            $connect->query("ALTER TABLE marzban_panel ADD shadowsocks VARCHAR(100)");
-            $connect->query("UPDATE marzban_panel SET shadowsocks = 'offshadowsocks'");
-            echo "The shadowsocks field was added ✅";
         }
         $Check_filde = $connect->query("SHOW COLUMNS FROM marzban_panel LIKE 'statusTest'");
         if (mysqli_num_rows($Check_filde) != 1) {
@@ -560,56 +570,56 @@ try {
     $result = $connect->query("SHOW TABLES LIKE 'textbot'");
     $table_exists = ($result->num_rows > 0);
     $text_roll = "
-♨️ قوانین استفاده از خدمات ما
+♨️ Правила пользования нашими услугами
 
-1- به اطلاعیه هایی که داخل کانال گذاشته می شود حتما توجه کنید.
-2- در صورتی که اطلاعیه ای در مورد قطعی در کانال گذاشته نشده به اکانت پشتیبانی پیام دهید
-3- سرویس ها را از طریق پیامک ارسال نکنید برای ارسال پیامک می توانید از طریق ایمیل ارسال کنید.
-    ";
+1- Обязательно обращайте внимание на объявления, размещенные на канале.
+2- Если на канале нет уведомления об отключении, отправьте сообщение в службу поддержки.
+3- Не отправляйте услуги через SMS. Чтобы отправить SMS, вы можете отправить по электронной почте.
+ ";
     $text_dec_fq = " 
- 💡 سوالات متداول ⁉️
+💡 Часто задаваемые вопросы ⁉️
 
-1️⃣ فیلترشکن شما آیپی ثابته؟ میتونم برای صرافی های ارز دیجیتال استفاده کنم؟
+1️⃣ Имеет ли ваш фильтр-выключатель фиксированный IP? Могу ли я использовать его для обмена криптовалют?
 
-✅ به دلیل وضعیت نت و محدودیت های کشور سرویس ما مناسب ترید نیست و فقط لوکیشن‌ ثابته.
+✅ Из-за состояния Интернета и ограничений в стране наш сервис не подходит для торговли и доступен только в стационарных местах.
 
-2️⃣ اگه قبل از منقضی شدن اکانت، تمدیدش کنم روزهای باقی مانده می سوزد؟
+2️⃣ Если я продлю свой аккаунт до истечения срока его действия, будут ли потеряны оставшиеся дни?
 
-✅ خیر، روزهای باقیمونده اکانت موقع تمدید حساب میشن و اگه مثلا 5 روز قبل از منقضی شدن اکانت 1 ماهه خودتون اون رو تمدید کنید 5 روز باقیمونده + 30 روز تمدید میشه.
+✅ Нет, оставшиеся дни аккаунта учитываются при продлении, и если, например, вы продлите свой 1-месячный аккаунт за 5 дней до истечения срока его действия, то оставшиеся 5 дней + 30 дней будут продлены.
 
-3️⃣ اگه به یک اکانت بیشتر از حد مجاز متصل شیم چه اتفاقی میافته؟
+3️⃣ Что произойдет, если мы подключимся к большему количеству учетных записей, чем разрешено?
 
-✅ در این صورت حجم سرویس شما زود تمام خواهد شد.
+✅ В этом случае ваш объем услуг быстро закончится.
 
-4️⃣ فیلترشکن شما از چه نوعیه؟
+4️⃣ Какой у вас тип фильтра-разрушителя?
 
-✅ فیلترشکن های ما v2ray است و پروتکل‌های مختلفی رو ساپورت میکنیم تا حتی تو دورانی که اینترنت اختلال داره بدون مشکل و افت سرعت بتونید از سرویستون استفاده کنید.
+✅ Наши фильтры-обрыватели работают на базе v2ray, и мы поддерживаем различные протоколы, чтобы вы могли пользоваться сервисом без проблем и падений скорости даже в периоды перебоев в работе Интернета.
 
-5️⃣ فیلترشکن از کدوم کشور است؟
+5️⃣ Из какой страны произведен фильтр-сбрасыватель?
 
-✅ سرور فیلترشکن ما از کشور  آلمان است
+✅ Наш сервер по взлому фильтров находится в Германии.
 
-6️⃣ چطور باید از این فیلترشکن استفاده کنم؟
+6️⃣ Как использовать этот фильтр-разрушитель?
 
-✅ برای آموزش استفاده از برنامه، روی دکمه «📚 آموزش» بزنید.
+✅ Чтобы узнать, как пользоваться приложением, нажмите кнопку «📚 Обучение».
 
-7️⃣ فیلترشکن وصل نمیشه، چیکار کنم؟
+7️⃣ Фильтр-выключатель не подключается, что делать?
 
-✅ به همراه یک عکس از پیغام خطایی که میگیرید به پشتیبانی مراجعه کنید.
+✅ Обратитесь в службу поддержки, приложив фотографию полученного вами сообщения об ошибке.
 
-8️⃣ فیلترشکن شما تضمینی هست که همیشه مواقع متصل بشه؟
+8️⃣ Гарантируется ли, что ваш фильтр-выключатель всегда будет подключаться?
 
-✅ به دلیل قابل پیش‌بینی نبودن وضعیت نت کشور، امکان دادن تضمین نیست فقط می‌تونیم تضمین کنیم که تمام تلاشمون رو برای ارائه سرویس هر چه بهتر انجام بدیم.
+✅ Из-за непредсказуемости интернет-ситуации в стране, гарантии дать невозможно. Мы можем только гарантировать, что сделаем все возможное, чтобы предоставить наилучший сервис.
 
-9️⃣ امکان بازگشت وجه دارید؟
+9️⃣ Можно ли получить возврат средств?
 
-✅ امکان بازگشت وجه در صورت حل نشدن مشکل از سمت ما وجود دارد.
+✅ Существует возможность возврата денег, если проблема не будет решена нами.
 
-💡 در صورتی که جواب سوالتون رو نگرفتید میتونید به «پشتیبانی» مراجعه کنید.";
+💡 Если вы не получили ответа на свой вопрос, вы можете обратиться в «Поддержку»";
     $text_channel = "   
-        ⚠️ کاربر گرامی؛ شما عضو چنل ما نیستید
-از طریق دکمه زیر وارد کانال شده و عضو شوید
-پس از عضویت دکمه بررسی عضویت را کلیک کنید";
+Уважаемый пользователь Вы не являетесь участником нашего канала.
+Зайдите на канал и подпишитесь, нажав на кнопку ниже.
+После подписки нажмите кнопку Проверить членство";
     if (!$table_exists) {
         $result = $connect->query("CREATE TABLE textbot (
         id_text varchar(600) PRIMARY KEY NOT NULL,
@@ -618,42 +628,42 @@ try {
         if (!$result) {
             echo "table textbot".mysqli_error($connect);
         }
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_start','سلام خوش آمدید') ");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_usertest','🔑 اکانت تست')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_Purchased_services','🛍 سرویس های من')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_support','☎️ پشتیبانی')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_help','📚 آموزش')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_bot_off','❌ ربات خاموش است، لطفا دقایقی دیگر مراجعه کنید')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_roll','$text_roll')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_fq','❓ سوالات متداول')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_dec_fq','$text_dec_fq')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_account','👨🏻‍💻 مشخصات کاربری')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_sell','🔐 خرید اشتراک')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_Add_Balance','💰 افزایش موجودی')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_channel','$text_channel')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_Discount','🎁 کد هدیه')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_Tariff_list','💰 تعرفه اشتراک ها')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_dec_Tariff_list','تنظیم نشده است')");
-        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_Account_op','🎛 حساب کاربری')");
-    }
-    else{
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_start','سلام خوش آمدید')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_usertest','🔑 اکانت تست')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_Purchased_services','🛍 سرویس های من')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_support','☎️ پشتیبانی')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_help','📚 آموزش')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_bot_off','❌ ربات خاموش است، لطفا دقایقی دیگر مراجعه کنید')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_roll','$text_roll')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_fq','❓ سوالات متداول')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_dec_fq','$text_dec_fq')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_account','👨🏻‍💻 مشخصات کاربری')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_sell','🔐 خرید اشتراک')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_Add_Balance','💰 افزایش موجودی')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_channel','$text_channel')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_Discount','🎁 کد هدیه')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_Tariff_list','💰 تعرفه اشتراک ها')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_dec_Tariff_list','تنظیم نشده است')");
-        $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_Account_op','🎛 حساب کاربری')");
+        $connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_start','Здравствуйте, добро пожаловать') ");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_usertest','🔑 Тестовый аккаунт')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_Purchased_services','🛍 Мои услуги')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_support','☎️ Поддержка')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_help','📚 Обучение')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_bot_off','❌ Бот выключен, пожалуйста, зайдите позже')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_roll','$text_roll')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_fq','❓ Часто задаваемые вопросы')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_dec_fq','$text_dec_fq')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_account','👨🏻‍💻 Профиль пользователя')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_sell','🔐 Покупка подписки')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_Add_Balance','💰 Пополнение баланса')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_channel','$text_channel')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_Discount','🎁 Подарочный код')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_Tariff_list','💰 Список тарифов')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_dec_Tariff_list','Не настроено')");
+$connect->query("INSERT INTO textbot (id_text,text) VALUES ('text_Account_op','🎛 Личный кабинет')");
+}
+else{
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_start','Здравствуйте, добро пожаловать')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_usertest','🔑 Тестовый аккаунт')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_Purchased_services','🛍 Мои услуги')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_support','☎️ Поддержка')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_help','📚 Обучение')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_bot_off','❌ Бот выключен, пожалуйста, зайдите позже')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_roll','$text_roll')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_fq','❓ Часто задаваемые вопросы')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_dec_fq','$text_dec_fq')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_account','👨🏻‍💻 Профиль пользователя')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_sell','🔐 Покупка подписки')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_Add_Balance','💰 Пополнение баланса')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_channel','$text_channel')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_Discount','🎁 Подарочный код')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_Tariff_list','💰 Список тарифов')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_dec_Tariff_list','Не настроено')");
+    $connect->query("INSERT IGNORE INTO textbot (id_text,text) VALUES ('text_Account_op','🎛 Личный кабинет')");
 
 
     }

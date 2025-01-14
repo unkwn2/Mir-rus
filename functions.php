@@ -144,7 +144,7 @@ function formatBytes($bytes, $precision = 2): string
 {
     $base = log($bytes, 1024);
     $power = $bytes > 0 ? floor($base) : 0;
-    $suffixes = ['بایت', 'کیلوبایت', 'مگابایت', 'گیگابایت', 'ترابایت'];
+    $suffixes = ['Byte', 'Kilobyte', 'Megabyte', 'Gigabyte', 'Terabyte'];
     return round(pow(1024, $base - $power), $precision) . ' ' . $suffixes[$power];
 }
 #---------------------[ ]--------------------------#
@@ -153,19 +153,18 @@ function generateUsername($from_id,$Metode,$username,$randomString,$text)
     global $connect;
     $setting = select("setting", "*");
     global $connect;
-    if($Metode == "آیدی عددی + حروف و عدد رندوم"){
-        return $from_id."_".$randomString;
-    }
-    elseif($Metode == "نام کاربری + حروف و عدد رندوم"){
-        return $username."_".$randomString;
-    }
-    elseif($Metode == "نام کاربری + عدد به ترتیب"){
-        $statistics = mysqli_fetch_assoc(mysqli_query($connect, "SELECT COUNT(id_user)  FROM invoice WHERE id_user = '$from_id'"));
-        $countInvoice = intval($statistics['COUNT(id_user)']) + 1 ;
-        return $username."_".$countInvoice;
-    }
-    elseif($Metode == "نام کاربری دلخواه")return $text;
-    elseif($Metode == "متن دلخواه + عدد رندوم")return $setting['namecustome']."_".$randomString;
+   if ($Metode == "Числовой ID + случайные буквы и числа") {
+    return $from_id . "_" . $randomString; // Возвращаем ID пользователя и случайную строку
+} elseif ($Metode == "Имя пользователя + случайные буквы и числа") {
+    return $username . "_" . $randomString; // Возвращаем имя пользователя и случайную строку
+} elseif ($Metode == "Имя пользователя + последовательные числа") {
+    $statistics = mysqli_fetch_assoc(mysqli_query($connect, "SELECT COUNT(id_user) FROM invoice WHERE id_user = '$from_id'")); // Получаем количество счетов для пользователя
+    $countInvoice = intval($statistics['COUNT(id_user)']) + 1; // Увеличиваем счет на 1
+    return $username . "_" . $countInvoice; // Возвращаем имя пользователя и номер счета
+} elseif ($Metode == "Произвольное имя пользователя") {
+    return $text; // Возвращаем произвольный текст
+} elseif ($Metode == "Произвольный текст + случайные числа") {
+    return $setting['namecustome'] . "_" . $randomString; // Возвращаем произвольный текст из настроек и случайную строку
 }
 
 function outputlunk($text){
@@ -219,12 +218,12 @@ function DirectPayment($order_id){
             $dataoutput['msg'] = json_encode($dataoutput['msg']);
             sendmessage($Balance_id['id'], $textbotlang['users']['sell']['ErrorConfig'], $keyboard, 'HTML');
             $texterros = "
-⭕️ یک کاربر قصد دریافت اکانت داشت که ساخت کانفیگ با خطا مواجه شده و به کاربر کانفیگ داده نشد
-✍️ دلیل خطا : 
+⭕️ Один пользователь пытался получить аккаунт, но создание конфигурации завершилось с ошибкой, и конфигурация не была предоставлена пользователю.
+✍️ Причина ошибки: 
 {$dataoutput['msg']}
-آیدی کابر : {$Balance_id['id']}
-نام کاربری کاربر : @{$Balance_id['username']}
-نام پنل : {$marzban_list_get['name_panel']}";
+ID пользователя: {$Balance_id['id']}
+Имя пользователя: @{$Balance_id['username']}
+Название панели: {$marzban_list_get['name_panel']}";
             foreach ($admin_ids as $admin) {
                 sendmessage($admin, $texterros, null, 'HTML');
                 step('home', $admin);
@@ -255,18 +254,19 @@ function DirectPayment($order_id){
             }
         }
         $Shoppinginfo = json_encode($Shoppinginfo);
-        $textcreatuser = "✅ سرویس با موفقیت ایجاد شد
-    
-👤 نام کاربری سرویس : <code>{$dataoutput['username']}</code>
-🌿 نام سرویس: {$get_invoice['name_product']}
-‏🇺🇳 لوکیشن: {$marzban_list_get['name_panel']}
-⏳ مدت زمان: {$get_invoice['Service_time']}  روز
-🗜 حجم سرویس:  {$get_invoice['Volume']} گیگ
-    
-لینک اتصال:
+        $textcreatuser = "✅ Сервис успешно создан
+
+👤 Имя пользователя сервиса: <code>{$dataoutput['username']}</code>
+🌿 Название сервиса: {$get_invoice['name_product']}
+‏🇺🇳 Локация: {$marzban_list_get['name_panel']}
+⏳ Срок действия: {$get_invoice['Service_time']} дней
+🗜 Объем сервиса: {$get_invoice['Volume']} гигабайт
+
+Ссылка для подключения:
 <code>{$config}{$output_config_link}</code>
     
-📚 راهنمای اتصال به سرویس را از طریق کلیک کردن دکمه زیر مطالعه بفرمایید";
+📚 Пожалуйста, ознакомьтесь с руководством по подключению к сервису, нажав на кнопку ниже.";
+
         if ($marzban_list_get['configManual'] == "onconfig") {
             if (count($dataoutput['configs']) == 1) {
                 $urlimage = "{$get_invoice['id_user']}$randomString.png";
@@ -320,8 +320,8 @@ function DirectPayment($order_id){
             $stmt->bindParam(':id_user', $Balance_id['id']);
             $stmt->bindParam(':code', $partsdic[1]);
             $stmt->execute();
-            $text_report = "⭕️ یک کاربر با نام کاربری @{$Balance_id['username']}  و آیدی عددی {$Balance_id['id']} از کد تخفیف {$partsdic[1]} استفاده کرد.";
-            if (strlen($setting['Channel_Report']) > 0) {
+            $text_report = "⭕️ Пользователь с именем @{$Balance_id['username']} и числовым ID {$Balance_id['id']} использовал код скидки {$partsdic[1]}.";
+if (strlen($setting['Channel_Report']) > 0) {
                 telegram('sendmessage',[
                     'chat_id' => $setting['Channel_Report'],
                     'text' => $text_report,
@@ -336,10 +336,10 @@ function DirectPayment($order_id){
                 $Balance_prim = $user_Balance['Balance'] + $result;
                 update("user","Balance",$Balance_prim, "id",$Balance_id['affiliates']);
                 $result = number_format($result);
-                $textadd = "🎁  پرداخت پورسانت 
-        
-        مبلغ $result تومان به حساب شما از طرف  زیر مجموعه تان به کیف پول شما واریز گردید";
-                sendmessage($Balance_id['affiliates'], $textadd, null, 'HTML');
+               $textadd = "🎁 Выплата комиссии 
+
+Сумма $result томан была зачислена на ваш счет от вашего подчиненного в ваш кошелек.";
+sendmessage($Balance_id['affiliates'], $textadd, null, 'HTML');
             }
         }
         $Balance_prims = $Balance_id['Balance'] - $get_invoice['price_product'];
@@ -347,21 +347,20 @@ function DirectPayment($order_id){
         update("user","Balance",$Balance_prims, "id",$Balance_id['id']);
         $Balance_id['Balance'] = select("user", "Balance", "id", $get_invoice['id_user'],"select")['Balance'];
         $balanceformatsell = number_format($Balance_id['Balance'], 0);
-        $text_report = " 🛍 خرید جدید بعد پرداخت موفق
-                
-⚙️ یک کاربر اکانت  با نام کانفیگ {$get_invoice['username']} خریداری کرد
-        
-        
-قیمت محصول : {$get_invoice['price_product']} تومان
-حجم محصول : {$get_invoice['Volume']} 
-آیدی عددی کاربر : <code>{$get_invoice['id_user']}</code>
-شماره تلفن کاربر : {$Balance_id['number']}
-موقعیت سرویس کاربر :{$get_invoice['Service_location']}
-موجودی کاربر : $balanceformatsell  تومان
-کد پیگیری: $randomString
-        
-            اطلاعات کاربر 👇👇
-            ⚜️ نام کاربری کاربر: @{$Balance_id['username']}";
+        $text_report = "🛍 Новая покупка после успешной оплаты
+
+⚙️ Пользователь купил аккаунт с конфигурацией {$get_invoice['username']}
+
+Цена продукта: {$get_invoice['price_product']} томан
+Объем продукта: {$get_invoice['Volume']}
+Числовой ID пользователя: <code>{$get_invoice['id_user']}</code>
+Номер телефона пользователя: {$Balance_id['number']}
+Местоположение сервиса пользователя: {$get_invoice['Service_location']}
+Баланс пользователя: $balanceformatsell томан
+Код отслеживания: $randomString
+
+Информация о пользователе 👇👇
+⚜️ Имя пользователя: @{$Balance_id['username']}";
         if (strlen($setting['Channel_Report']) > 0) {
             telegram('sendmessage',[
                 'chat_id' => $setting['Channel_Report'],
@@ -374,7 +373,7 @@ function DirectPayment($order_id){
             update("invoice","Status","active","id_invoice",$get_invoice['id_invoice']);
             telegram('answerCallbackQuery', array(
                     'callback_query_id' => $callback_query_id,
-                    'text' => "سفارش تایید شد",
+                    'text' => "Заказ подтвержден",
                     'show_alert' => true,
                     'cache_time' => 5,
                 )
@@ -389,16 +388,16 @@ function DirectPayment($order_id){
         if($Payment_report['Payment_Method'] == "cart to cart"){
             telegram('answerCallbackQuery', array(
                     'callback_query_id' => $callback_query_id,
-                    'text' => "سفارش تایید شد",
+                    'text' => "Заказ подтвержден",
                     'show_alert' => true,
                     'cache_time' => 5,
                 )
             );
         }
-        sendmessage($Payment_report['id_user'], "💎 کاربر گرامی مبلغ {$Payment_report['price']} تومان به کیف پول شما واریز گردید با تشکراز پرداخت شما.
-                
-🛒 کد پیگیری شما: {$Payment_report['id_order']}", null, 'HTML');
-    }
+sendmessage($Payment_report['id_user'], "💎 Уважаемый пользователь, сумма {$Payment_report['price']} томан была зачислена на ваш кошелек. Благодарим вас за оплату.
+
+🛒 Ваш код отслеживания: {$Payment_report['id_order']}", null, 'HTML');
+}
 }
 function savedata($type,$namefiled,$valuefiled){
     global $from_id;
@@ -447,5 +446,6 @@ $telegram_ip_ranges = [
     } else {
         return false;
     }
- }
-}
+	}
+	}
+	}
